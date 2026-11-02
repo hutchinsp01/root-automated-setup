@@ -1,10 +1,12 @@
 # Root Automated Setup
 
-Welcome to the GitHub page for the Root Automated Setup. If you wish to run it, simply head over to [https://ewendc.github.io/root-automated-setup/](https://ewendc.github.io/root-automated-setup/). If you wish to contribute to the project, please read on.
+Welcome to the GitHub page for the Root Automated Setup. If you wish to run it, simply head over to [https://hutchinsp01.github.io/root-automated-setup/](https://hutchinsp01.github.io/root-automated-setup/). If you wish to contribute to the project, please read on.
+
+This is a fork of the original [Root Automated Setup](https://github.com/EwenDC/root-automated-setup) by [EwenDC](https://github.com/EwenDC), which is no longer actively maintained.
 
 ## Reporting an issue
 
-If you have encountered a bug or unexpected behavior when running the app, or you have run into an obstacle while trying to contribute a translation or code change, then please do not hesitate to raise a new issue [here](https://github.com/EwenDC/root-automated-setup/issues).
+If you have encountered a bug or unexpected behavior when running the app, or you have run into an obstacle while trying to contribute a translation or code change, then please do not hesitate to raise a new issue [here](https://github.com/hutchinsp01/root-automated-setup/issues).
 
 ## Setting Up the Developer Environment
 
@@ -121,7 +123,7 @@ Open the command line program for your operating system and navigate to the fold
 
 ## Adding content
 
-This app was designed from the ground up to easily support the addition of new Root content without any code changes (as long as it doesn't modify the overall advanced setup rules). The game content is loaded from a file called [componentDefinitions.ts](https://github.com/EwenDC/root-automated-setup/blob/main/src/componentDefinitions.ts), which contains a list of all expansions, and what components are included in each expansion. Since it is a TypeScript file, the correct format is enforced by TypeScript. You can see what the expected format is in the [types.ts](https://github.com/EwenDC/root-automated-setup/blob/main/src/types.ts#L33) file. The associated images of new content should be imported into the file as per the example set by existing content. This allows the images to be processed by the compiler.
+This app was designed from the ground up to easily support the addition of new Root content without any code changes (as long as it doesn't modify the overall advanced setup rules). The game content is loaded from a file called [componentDefinitions.ts](src/componentDefinitions.ts), which contains a list of all expansions, and what components are included in each expansion. Since it is a TypeScript file, the correct format is enforced by TypeScript. You can see what the expected format is in the [types.ts](src/types.ts#L39) file. The associated images of new content should be imported into the file as per the example set by existing content. This allows the images to be processed by the compiler.
 
 We are willing to accept contributions for fan-made print-and-play content, provided that there is enough demand from users to do so. Remember, this app is designed specifically for the physical game, so content that only exists on Tabletop Simulator would not be eligible to be added.
 
@@ -188,7 +190,7 @@ All images used in the app are sourced from official sources, including the [Led
 
 ## Contributing Code
 
-Over on the [issues page](https://github.com/EwenDC/root-automated-setup/issues) are a list of feature requests for the app. You can feel free to have a crack at implementing one of them, or any other feature or minor fix you can think of. When you are done, fork this repository then submit your changes as a [pull request](https://github.com/EwenDC/root-automated-setup/pulls).
+Over on the [issues page](https://github.com/hutchinsp01/root-automated-setup/issues) are a list of feature requests for the app. You can feel free to have a crack at implementing one of them, or any other feature or minor fix you can think of. When you are done, fork this repository then submit your changes as a [pull request](https://github.com/hutchinsp01/root-automated-setup/pulls).
 
 ### Code Standards
 

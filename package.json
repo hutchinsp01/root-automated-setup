@@ -2,7 +2,7 @@
   "name": "root-automated-setup",
   "version": "1.0.1",
   "private": true,
-  "homepage": "https://ewendc.github.io/root-automated-setup/",
+  "homepage": "https://hutchinsp01.github.io/root-automated-setup/",
   "engines": {
     "node": ">=22",
     "pnpm": ">=10"
