@@ -190,6 +190,7 @@ const definitions: DeepReadonly<Record<ExpansionCode, Expansion>> = {
         image: thiefMeeple,
         excludeFactions: ['knaves'],
         dealVagabond: true,
+        ruinItems: true,
         standardSetup: {
           order: 4,
         },
@@ -323,6 +324,7 @@ const definitions: DeepReadonly<Record<ExpansionCode, Expansion>> = {
         image: roninMeeple,
         excludeFactions: ['knaves'],
         dealVagabond: true,
+        ruinItems: true,
         standardSetup: {
           order: 5,
         },
@@ -587,6 +589,7 @@ const definitions: DeepReadonly<Record<ExpansionCode, Expansion>> = {
         key: 'warlord',
         image: warlordMeeple,
         militant: true,
+        ruinItems: true,
         standardSetup: {
           order: 10,
           cornerSetup: true,
@@ -652,6 +655,7 @@ const definitions: DeepReadonly<Record<ExpansionCode, Expansion>> = {
       exile: {
         image: exileMeeple,
         excludeFactions: ['vagabond', 'vagabond2', 'knaves'],
+        demotedRuinItems: true,
       },
     },
   },
