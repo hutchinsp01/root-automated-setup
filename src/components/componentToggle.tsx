@@ -8,6 +8,7 @@ import type { CodeObject, GameComponent, Togglable } from '../types'
 
 import { useAppDispatch, useAppSelector, useInvalid } from '../hooks'
 import { stepActiveContext } from '../hooks'
+import PinIcon from '../images/icons/pin.svg?react'
 import { massComponentToggle, setErrorMessage } from '../store'
 import LocaleText from './localeText'
 
@@ -16,6 +17,9 @@ interface ComponentToggleProps<T> {
   toggleComponent: (code: string) => AppThunk | UnknownAction
   getLabelKey: (component: T) => string
   unsorted?: boolean | undefined
+  /** If provided along with pinComponent, enabled components can be pinned. */
+  getPinned?: ((component: T) => boolean) | undefined
+  pinComponent?: ((code: string, pinned: boolean) => AppThunk | UnknownAction) | undefined
 }
 
 const ComponentToggle = (<T extends CodeObject & GameComponent & Togglable>({
@@ -23,6 +27,8 @@ const ComponentToggle = (<T extends CodeObject & GameComponent & Togglable>({
   toggleComponent,
   getLabelKey,
   unsorted = false,
+  getPinned,
+  pinComponent,
 }: ComponentToggleProps<T>) => {
   const components = useAppSelector(selector)
   const stepActive = useContext(stepActiveContext)
@@ -35,6 +41,7 @@ const ComponentToggle = (<T extends CodeObject & GameComponent & Togglable>({
   const sortedComponents = components.map(component => ({
     ...component,
     label: t(getLabelKey(component)),
+    pinned: getPinned?.(component) ?? false,
   }))
   // Sort our components list by default (unless asked explicitly not to)
   if (!unsorted) {
@@ -78,29 +85,48 @@ const ComponentToggle = (<T extends CodeObject & GameComponent & Togglable>({
         </div>
       ) : null}
       <div className="components">
-        {sortedComponents.map(({ code, enabled, image, label, locked }) =>
+        {sortedComponents.map(({ code, enabled, image, label, locked, pinned }) =>
           enabled || stepActive ? (
-            <label
+            <div
               key={code}
-              title={stepActive && locked ? t(locked) : undefined}
-              onClick={locked ? () => dispatch(setErrorMessage(locked)) : undefined}
+              className="component"
             >
-              <input
-                type="checkbox"
-                role="switch"
-                checked={enabled}
-                disabled={stepActive ? locked !== false : true}
-                aria-invalid={invalid ? true : undefined}
-                aria-errormessage={invalid ? 'appError' : undefined}
-                onChange={() => dispatch(toggleComponent(code))}
-              />
-              <img
-                src={image}
-                alt="" // Not required as the input already has a label
-                aria-hidden="true"
-              />
-              <div className="name">{label}</div>
-            </label>
+              <label
+                title={stepActive && locked ? t(locked) : undefined}
+                onClick={locked ? () => dispatch(setErrorMessage(locked)) : undefined}
+              >
+                <input
+                  type="checkbox"
+                  role="switch"
+                  checked={enabled}
+                  disabled={stepActive ? locked !== false : true}
+                  aria-invalid={invalid ? true : undefined}
+                  aria-errormessage={invalid ? 'appError' : undefined}
+                  onChange={() => dispatch(toggleComponent(code))}
+                />
+                <img
+                  src={image}
+                  alt="" // Not required as the input already has a label
+                  aria-hidden="true"
+                />
+                <div className="name">{label}</div>
+              </label>
+              {
+                // Only show the pin button on enabled components while the step is active
+                pinComponent && getPinned && enabled && stepActive ? (
+                  <button
+                    type="button"
+                    className="pin"
+                    aria-pressed={pinned}
+                    aria-label={t('label.pinToDraft', { name: label })}
+                    title={t('label.pinToDraft', { name: label })}
+                    onClick={() => dispatch(pinComponent(code, !pinned))}
+                  >
+                    <PinIcon aria-hidden="true" />
+                  </button>
+                ) : null
+              }
+            </div>
           ) : null,
         )}
       </div>

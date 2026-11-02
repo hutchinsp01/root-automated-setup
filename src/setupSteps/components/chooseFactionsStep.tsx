@@ -6,6 +6,7 @@ import Radiogroup from '../../components/radiogroup'
 import Section from '../../components/section'
 import { useAppDispatch, useAppSelector } from '../../hooks'
 import {
+  pinFaction,
   selectCaptainArray,
   selectFactionArray,
   selectVagabondArray,
@@ -29,6 +30,7 @@ const ChooseFactionsStep: SetupStepComponent = () => {
     <Section
       titleKey="setupStep.chooseFactions.title"
       textKey="setupStep.chooseFactions.body"
+      translationOptions={{ context: useDraft ? 'useDraft' : undefined }}
     >
       {playerCount < factions.length ? (
         <Checkbox
@@ -41,6 +43,8 @@ const ChooseFactionsStep: SetupStepComponent = () => {
         selector={selectFactionArray}
         toggleComponent={toggleFaction}
         getLabelKey={faction => `faction.${faction.key}.name`}
+        getPinned={faction => faction.pinned}
+        pinComponent={useDraft ? pinFaction : undefined}
       />
       {useDraft && factions.some(faction => faction.dealVagabond && faction.enabled) ? (
         <>

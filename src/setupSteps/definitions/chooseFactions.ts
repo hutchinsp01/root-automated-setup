@@ -2,7 +2,7 @@ import type { SetupStepDefinition } from '..'
 
 import { CAPTAIN_DEAL_COUNT, MAX_CORNER_SETUPS } from '../../constants'
 import { countMatches, getEnabled } from '../../functions/filtering'
-import { takeRandom } from '../../functions/random'
+import { shuffleList, takeRandom } from '../../functions/random'
 import {
   addToFactionPool,
   lockFaction,
@@ -79,13 +79,8 @@ export const chooseFactions: SetupStepDefinition = {
     // Clear the faction pool of any potential stale data from previous setups
     if (state.flow.factionPool.length > 0) dispatch(resetFactionPool())
 
-    // Get our list of militant and insurgent factions which are available for selection
-    const workingFactionPool = selectFactionArray(state).filter(
-      ({ enabled, militant }) => enabled && militant,
-    )
-    const insurgentFactions = selectFactionArray(state).filter(
-      ({ enabled, militant }) => enabled && !militant,
-    )
+    // Get our list of factions which are available for selection
+    const enabledFactions = getEnabled(selectFactionArray(state))
     let vagabondPool: VagabondCode[] | undefined
     let captainPool: CaptainCode[] | undefined
 
@@ -104,7 +99,7 @@ export const chooseFactions: SetupStepDefinition = {
 
       // Get our vagabond faction count to validate our vagabondPool against
       const vagabondFactionCount = countMatches(
-        workingFactionPool.concat(insurgentFactions),
+        enabledFactions,
         ({ dealVagabond }) => dealVagabond ?? false,
       )
       if (vagabondPool.length < vagabondFactionCount) {
@@ -126,7 +121,7 @@ export const chooseFactions: SetupStepDefinition = {
 
       // Get our knave faction count to validate our captainPool against
       const captainFactionCount = countMatches(
-        workingFactionPool.concat(insurgentFactions),
+        enabledFactions,
         ({ dealCaptains }) => dealCaptains ?? false,
       )
       if (captainPool.length < captainFactionCount * CAPTAIN_DEAL_COUNT) {
@@ -139,53 +134,83 @@ export const chooseFactions: SetupStepDefinition = {
     const factionCount = useDraft ? playerCount + 1 : playerCount
 
     // Check that there are enough factions available for setup
-    if (
-      workingFactionPool.length < 1 ||
-      workingFactionPool.length + insurgentFactions.length < factionCount
-    ) {
+    const hasMilitantFaction = enabledFactions.some(({ militant }) => militant)
+    if (!hasMilitantFaction || enabledFactions.length < factionCount) {
       // Set the correct error message
       dispatch(
-        setErrorMessage(
-          workingFactionPool.length < 1 ? 'error.noMilitantFaction' : 'error.tooFewFaction',
-        ),
+        setErrorMessage(!hasMilitantFaction ? 'error.noMilitantFaction' : 'error.tooFewFaction'),
       )
       return null
     }
 
-    // Start by adding a random militant faction
-    const firstFaction = takeRandom(workingFactionPool)
-    dispatch(addToFactionPool(firstFaction, vagabondPool, captainPool))
-    // Add the insurgent factions to the mix
-    workingFactionPool.push(...insurgentFactions)
+    // Pinned factions are guaranteed a place in the draft pool, so check that they all fit together
+    const pinnedFactions = useDraft ? enabledFactions.filter(({ pinned }) => pinned) : []
+    const pinnedCodes = new Set(pinnedFactions.map(({ code }) => code))
+    if (pinnedFactions.length > factionCount) {
+      dispatch(setErrorMessage('error.tooManyPinned'))
+      return null
+    }
+    if (
+      pinnedFactions.some(({ excludeFactions }) =>
+        excludeFactions?.some(code => pinnedCodes.has(code)),
+      )
+    ) {
+      dispatch(setErrorMessage('error.pinnedConflict'))
+      return null
+    }
+    const hasPinnedMilitant = pinnedFactions.some(({ militant }) => militant)
+    if (pinnedFactions.length === factionCount && !hasPinnedMilitant) {
+      dispatch(setErrorMessage('error.pinnedNoMilitant'))
+      return null
+    }
 
-    let factionsSetUp = 1
+    // Get our list of militant and insurgent factions which are available for random selection
+    const workingFactionPool = enabledFactions.filter(
+      ({ code, militant }) => militant && !pinnedCodes.has(code),
+    )
+    const insurgentFactions = enabledFactions.filter(
+      ({ code, militant }) => !militant && !pinnedCodes.has(code),
+    )
+
+    const chosenFactions: typeof enabledFactions = []
     // Keep track of if we've already used a corner in standard setup
-    let cornerSetupCount = !useDraft && firstFaction.standardSetup.cornerSetup ? 1 : 0
-    const incompatibleFactions = new Set<FactionCode>(firstFaction.excludeFactions)
+    let cornerSetupCount = 0
+    const incompatibleFactions = new Set<FactionCode>()
 
-    // Add enough factions to make the total pool equal factionCount
-    while (factionsSetUp < factionCount && workingFactionPool.length > 0) {
-      const candidateFaction = takeRandom(workingFactionPool)
+    const chooseFaction = (faction: (typeof enabledFactions)[number]) => {
+      chosenFactions.push(faction)
+      if (!useDraft && faction.standardSetup.cornerSetup) cornerSetupCount++
+      faction.excludeFactions?.forEach(code => incompatibleFactions.add(code))
+    }
 
-      if (
-        // Make sure we don't include more than 4 corner clearing factions in standard setup
-        (useDraft ||
-          !candidateFaction.standardSetup.cornerSetup ||
-          cornerSetupCount < MAX_CORNER_SETUPS) &&
-        // Don't include any factions that are incompatible with ones already chosen
-        !incompatibleFactions.has(candidateFaction.code)
-      ) {
-        dispatch(addToFactionPool(candidateFaction, vagabondPool, captainPool))
-        factionsSetUp++
-        if (!useDraft && candidateFaction.standardSetup.cornerSetup) cornerSetupCount++
-        if (candidateFaction.excludeFactions) {
-          candidateFaction.excludeFactions.forEach(faction => incompatibleFactions.add(faction))
+    // Randomly choose factions from the given pool until we have chosen targetCount factions
+    const chooseRandomFactions = (pool: typeof enabledFactions, targetCount: number) => {
+      while (chosenFactions.length < targetCount && pool.length > 0) {
+        const candidateFaction = takeRandom(pool)
+
+        if (
+          // Make sure we don't include more than 4 corner clearing factions in standard setup
+          (useDraft ||
+            !candidateFaction.standardSetup.cornerSetup ||
+            cornerSetupCount < MAX_CORNER_SETUPS) &&
+          // Don't include any factions that are incompatible with ones already chosen
+          !incompatibleFactions.has(candidateFaction.code)
+        ) {
+          chooseFaction(candidateFaction)
         }
       }
     }
 
+    // Start with the pinned factions, then make sure we have at least one militant faction
+    pinnedFactions.forEach(chooseFaction)
+    if (!hasPinnedMilitant) chooseRandomFactions(workingFactionPool, chosenFactions.length + 1)
+    // Add the insurgent factions to the mix
+    workingFactionPool.push(...insurgentFactions)
+    // Add enough factions to make the total pool equal factionCount
+    chooseRandomFactions(workingFactionPool, factionCount)
+
     // Check if we were able to set up
-    if (factionsSetUp < factionCount) {
+    if (chosenFactions.length < factionCount) {
       // Show appropriate error message
       dispatch(
         setErrorMessage(
@@ -196,6 +221,15 @@ export const chooseFactions: SetupStepDefinition = {
       )
       return null
     }
+
+    // Draft setup requires the pool to lead with a militant faction. Shuffle the rest so that pinned
+    // factions can't be told apart from randomly chosen ones.
+    shuffleList(chosenFactions)
+    const militantIndex = chosenFactions.findIndex(({ militant }) => militant)
+    chosenFactions.unshift(...chosenFactions.splice(militantIndex, 1))
+    chosenFactions.forEach(faction => {
+      dispatch(addToFactionPool(faction, vagabondPool, captainPool))
+    })
 
     dispatch(setCurrentPlayerIndex(null))
     dispatch(setCurrentIndex(null))
