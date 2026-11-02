@@ -106,6 +106,9 @@ export const ICON_DICTIONARY: DeepReadonly<
   },
 }
 
+/** The lookup key used to save and load the "pinned" persisted setting for a faction. */
+export const PINNED_KEY = 'pinned'
+
 /** The lookup key used to save and load the "use landmark" persisted setting for a map. */
 export const USE_LANDMARK_KEY = 'useLandmark'
 

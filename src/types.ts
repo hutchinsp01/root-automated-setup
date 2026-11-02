@@ -258,6 +258,11 @@ export interface MapInfo extends ComponentInfo {
   useLandmark?: boolean
 }
 
+/** Generic information about a faction component, namely whether it is pinned to the draft pool. */
+export interface FactionInfo extends ComponentInfo {
+  pinned: boolean
+}
+
 /** An enum of the individual steps in the setup process. */
 export const enum SetupStep {
   chooseExpansions,

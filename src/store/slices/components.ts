@@ -9,6 +9,7 @@ import type {
   Expansion,
   ExpansionCode,
   FactionCode,
+  FactionInfo,
   GameComponent,
   HirelingCode,
   LandmarkCode,
@@ -19,7 +20,7 @@ import type {
 } from '../../types'
 
 import definitions from '../../componentDefinitions'
-import { COMPONENT_TYPES, FIXED_SUIT_KEY, USE_LANDMARK_KEY } from '../../constants'
+import { COMPONENT_TYPES, FIXED_SUIT_KEY, PINNED_KEY, USE_LANDMARK_KEY } from '../../constants'
 import { loadPersistedSetting, savePersistedSetting } from '../../functions/persistedSettings'
 import { typedEntries } from '../../functions/typed'
 import { lockComponent, selectComponentArray, toggleComponent } from '../utils'
@@ -29,7 +30,7 @@ export interface ComponentsState {
   captains: Record<VagabondCode, ComponentInfo>
   decks: Record<DeckCode, ComponentInfo>
   expansions: Record<ExpansionCode, GameComponent & Togglable>
-  factions: Record<FactionCode, ComponentInfo>
+  factions: Record<FactionCode, FactionInfo>
   hirelings: Record<HirelingCode, ComponentInfo>
   landmarks: Record<LandmarkCode, ComponentInfo>
   maps: Record<MapCode, MapInfo>
@@ -65,7 +66,17 @@ const addExpansionComponents = (
           true,
         )
 
-      state[componentType][componentCode] = componentInfo
+      if (componentType === 'factions') {
+        state.factions[componentCode] = {
+          ...componentInfo,
+          pinned: loadPersistedSetting<boolean>(
+            `${componentType}.${componentCode}.${PINNED_KEY}`,
+            false,
+          ),
+        }
+      } else {
+        state[componentType][componentCode] = componentInfo
+      }
     }
   }
 }
@@ -136,9 +147,35 @@ export const componentsSlice = createSlice({
       }
     },
 
-    toggleFaction: toggleComponent('factions'),
+    toggleFaction(state, action: PayloadAction<FactionCode>) {
+      toggleComponent('factions')(state, action)
+      // Disabled factions can't be pinned to the draft pool
+      const faction = state.factions[action.payload]
+      if (faction && !faction.enabled && faction.pinned) {
+        faction.pinned = false
+        savePersistedSetting(`factions.${action.payload}.${PINNED_KEY}`, false)
+      }
+    },
 
     lockFaction: lockComponent('factions'),
+
+    pinFaction: {
+      prepare: (...payload: [factionCode: FactionCode, pinned: boolean]) => ({ payload }),
+      reducer(state, { payload }: PayloadAction<[factionCode: FactionCode, pinned: boolean]>) {
+        const [factionCode, pinned] = payload
+        const faction = state.factions[factionCode]
+        if (faction) {
+          faction.pinned = pinned
+          savePersistedSetting(`factions.${factionCode}.${PINNED_KEY}`, pinned)
+        } else {
+          console.warn(
+            'Invalid payload for pinFaction action:',
+            payload,
+            '(No faction exists with provided code)',
+          )
+        }
+      },
+    },
 
     toggleHireling: toggleComponent('hirelings'),
 
@@ -223,6 +260,7 @@ export const {
   lockLandmark,
   lockMap,
   mapFixedSuits,
+  pinFaction,
   toggleCaptain,
   toggleExpansion,
   toggleDeck,

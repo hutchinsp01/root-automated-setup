@@ -113,86 +113,141 @@
       margin-inline-start: 0;
     }
 
-    > label {
-      @include transition;
-      border: 2px dotted transparent;
-      border-radius: 16px;
-      box-sizing: border-box;
-      color: darkgray;
+    > .component {
       display: grid;
-      grid-template-rows: 0 minmax(0, 1fr) auto;
-      justify-items: center;
-      // Account for outline position while focused
-      margin: 5px;
-      outline: 3px dashed transparent;
-      outline-offset: 0;
-      transition-property: background-color, color, outline, outline-offset, border;
+      grid-template-rows: minmax(0, 1fr);
+      position: relative;
 
-      &:has(> input:enabled) {
+      > label {
+        @include transition;
+        border: 2px dotted transparent;
+        border-radius: 16px;
+        box-sizing: border-box;
+        color: darkgray;
+        display: grid;
+        grid-template-rows: 0 minmax(0, 1fr) auto;
+        justify-items: center;
+        // Account for outline position while focused
+        margin: 5px;
+        outline: 3px dashed transparent;
+        outline-offset: 0;
+        transition-property: background-color, color, outline, outline-offset, border;
+
+        &:has(> input:enabled) {
+          cursor: pointer;
+          &:hover {
+            background-color: white;
+          }
+        }
+
+        &:has(> input:focus-visible) {
+          outline-offset: 2px;
+          border-color: black;
+        }
+
+        section.active &:has(> input:disabled) {
+          outline: 2px solid darkgray;
+        }
+
+        section.active &:has(> input:checked) {
+          color: black;
+          outline-color: black;
+        }
+
+        section.inactive & {
+          // Don't leave a margin for outlines if the selection is static
+          margin: 0;
+          transition: none;
+        }
+
+        // Component Image
+        > img {
+          @include transition;
+          box-sizing: border-box;
+          filter: drop-shadow(1px 1px rgba(169, 169, 169, 0.5)) grayscale(100%);
+          inline-size: 100%;
+          max-block-size: 100%;
+          mix-blend-mode: multiply;
+          object-fit: contain;
+          padding: 5px;
+          transition-property: filter;
+        }
+
+        // Hidden Checkbox Input
+        > input {
+          appearance: none;
+
+          section.active &:checked + img {
+            filter: drop-shadow(1px 1px rgba(0, 0, 0, 0.5)) grayscale(0%);
+          }
+
+          &:focus {
+            outline: none;
+          }
+        }
+
+        // Component Name
+        > .name {
+          text-align: center;
+        }
+      }
+
+      // Pin Button
+      > .pin {
+        @include transition;
+        align-items: center;
+        background-color: ivory;
+        block-size: 2rem;
+        border: 2px solid darkgray;
+        border-radius: 50%;
+        color: darkgray;
+        display: flex;
+        inline-size: 2rem;
+        inset-block-start: 11px;
+        inset-inline-end: 11px;
+        justify-content: center;
+        outline: 2px dotted transparent;
+        outline-offset: 2px;
+        padding: 0;
+        position: absolute;
+        transition-property: background-color, border-color, color, outline-color;
+
         cursor: pointer;
+
         &:hover {
           background-color: white;
-        }
-      }
-
-      &:has(> input:focus-visible) {
-        outline-offset: 2px;
-        border-color: black;
-      }
-
-      section.active &:has(> input:disabled) {
-        outline: 2px solid darkgray;
-      }
-
-      section.active &:has(> input:checked) {
-        color: black;
-        outline-color: black;
-      }
-
-      section.inactive & {
-        // Don't leave a margin for outlines if the selection is static
-        margin: 0;
-        transition: none;
-      }
-
-      // Component Image
-      > img {
-        @include transition;
-        box-sizing: border-box;
-        filter: drop-shadow(1px 1px rgba(169, 169, 169, 0.5)) grayscale(100%);
-        inline-size: 100%;
-        max-block-size: 100%;
-        mix-blend-mode: multiply;
-        object-fit: contain;
-        padding: 5px;
-        transition-property: filter;
-      }
-
-      // Hidden Checkbox Input
-      > input {
-        appearance: none;
-
-        section.active &:checked + img {
-          filter: drop-shadow(1px 1px rgba(0, 0, 0, 0.5)) grayscale(0%);
+          border-color: black;
+          color: black;
         }
 
-        &:focus {
-          outline: none;
+        &:focus-visible {
+          outline-color: black;
         }
-      }
 
-      // Component Name
-      > .name {
-        text-align: center;
+        &[aria-pressed='true'] {
+          background-color: black;
+          border-color: black;
+          color: ivory;
+        }
+
+        > svg {
+          block-size: 1rem;
+          inline-size: 1rem;
+        }
       }
     }
 
     @supports (grid-template-rows: subgrid) {
       grid-template-rows: 0 minmax(0, 1fr) auto;
 
-      > label {
+      > .component {
         grid-row: span 3;
         grid-template-rows: subgrid;
+
+        > label {
+          grid-row: span 3;
+          grid-template-rows: subgrid;
+        }
       }
     }
   }
@@ -215,7 +270,7 @@
         grid-template-rows: 0 minmax(0, 1fr) auto;
       }
 
-      > label {
+      > .component > label {
         max-block-size: calc(54px + 6rem);
       }
     }
@@ -275,7 +330,7 @@
         gap: 6px;
       }
 
-      > label {
+      > .component > label {
         > img {
           mix-blend-mode: normal;
         }

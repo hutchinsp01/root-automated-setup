@@ -43,6 +43,7 @@ export default {
     mouse: `Mouse`,
     nextStep: `Next Step`,
     pageTitle: `Root Automated Setup`,
+    pinToDraft: `Guarantee {{name}} a place in the draft pool`,
     placeMarkers: {
       floodSuit: `<li>Collect the 12 suit markers, then place them in the clearings shown in the chart below.</li><li>Cover 3 flooding clearings with flood markers as shown—one light green, one dark green, and one brown. Align the flood markers’ paths so that they match up with paths touching the marker.</li>`,
       landmarkSuit: `<li>Collect the 12 suit markers, then place them in the clearings shown in the chart below.</li><li>Place the {{mouse}}, {{fox}}, and {{rabbit}} landmarks in the three clearings shown. Grab their landmark cards from the game box and place them next to the board on their non-setup side.</li>`,
@@ -99,6 +100,8 @@ export default {
     noLandmark: `No Landmark selected! Please select a Landmark then perform its setup`,
     noMap: `No Maps selected! Please select at least one Map`,
     noMilitantFaction: `No Militant Factions selected! Please select at least one Militant Faction`,
+    pinnedConflict: `Some pinned Factions cannot be played together! Please unpin one of them`,
+    pinnedNoMilitant: `Pinned Factions fill the whole draft pool, but none of them are Militant! Please pin a Militant Faction or unpin a Faction`,
     tooFewCaptains: `Not enough Knave captains selected! Please include more captains in your selection`,
     tooFewFaction: `Not enough Factions selected! Please select more Factions, disable draft faction selection, or lower the player count`,
     tooFewHireling: `Not enough Hirelings to perform Hireling set up! This could be because the current Hireling selection requires removing too many factions from set up`,
@@ -106,6 +109,7 @@ export default {
     tooFewPlayerInsurgent: `Cannot use non-militant factions with less than 3 players and no bots or hirelings`,
     tooFewVagabond: `Not enough Vagabond characters selected! Please include more Vagabond characters, or exclude some Vagabond factions`,
     tooManyCornerSetup: `Too many selected factions require a corner clearing for set up! Please increase the faction selection or enable draft faction selection`,
+    tooManyPinned: `Too many pinned Factions! You can pin at most one more Faction than there are players, so please unpin some Factions or increase the player count`,
   },
   setupStep: {
     chooseExpansions: {
@@ -161,6 +165,7 @@ export default {
     chooseFactions: {
       title: `Set up Factions`,
       body: `As a group, select which factions you would like to include in set up.`,
+      body_useDraft: `As a group, select which factions you would like to include in set up. Pin a faction to guarantee it a place in the draft pool.`,
     },
     selectFaction: {
       subtitle: `Assign Factions`,
