@@ -40,7 +40,7 @@ export interface Expansion extends GameComponent {
   captains?: Record<CaptainCode, Vagabond>
   decks?: Record<DeckCode, GameComponent>
   factions?: Record<FactionCode, Faction>
-  hirelings?: Record<HirelingCode, FactionExcludingComponent>
+  hirelings?: Record<HirelingCode, Hireling>
   landmarks?: Record<LandmarkCode, Landmark>
   maps?: Record<MapCode, LargeMap | StandardMap>
   vagabonds?: Record<VagabondCode, Vagabond>
@@ -68,6 +68,8 @@ export interface Faction extends FactionExcludingComponent {
   militant?: boolean
   dealVagabond?: boolean
   dealCaptains?: boolean
+  /** Whether the faction puts the ruin items under the ruins during setup. */
+  ruinItems?: boolean
   standardSetup: {
     order: number
     cornerSetup?: boolean
@@ -87,6 +89,12 @@ export interface Faction extends FactionExcludingComponent {
 
 /** A unique identifier for a Hireling. */
 export type HirelingCode = string
+
+/** An object representing a Hireling from the Root board game. */
+export interface Hireling extends FactionExcludingComponent {
+  /** Whether the hireling's demoted side puts the ruin items under the ruins during setup. */
+  demotedRuinItems?: boolean
+}
 
 /** A unique identifier for a Landmark. */
 export type LandmarkCode = string
@@ -298,6 +306,7 @@ export interface FactionEntry {
   militant: boolean
   vagabond?: true | VagabondCode
   captains?: [CaptainCode, CaptainCode, CaptainCode, CaptainCode]
+  ruinItems?: true
 }
 
 /** An object representing an promoted or demoted Hireling. */
@@ -314,6 +323,7 @@ export interface FlowSlice {
   landmarkPool: LandmarkCode[]
   lastFactionLocked: boolean
   playerIndex: number | null
+  ruinItemsSetUp: boolean
   step: SetupStep
   vagabondSetUp: boolean
 }

@@ -33,6 +33,7 @@ export interface FlowState {
   landmarkPool: LandmarkCode[]
   lastFactionLocked: boolean
   currentPlayerIndex: number | null
+  ruinItemsSetUp: boolean
   currentStep: SetupStep
   vagabondSetUp: boolean
   pastSteps: FlowSlice[]
@@ -48,6 +49,7 @@ const getSlice = (flowState: FlowState): FlowSlice => ({
   landmarkPool: [...flowState.landmarkPool],
   lastFactionLocked: flowState.lastFactionLocked,
   playerIndex: flowState.currentPlayerIndex,
+  ruinItemsSetUp: flowState.ruinItemsSetUp,
   step: flowState.currentStep,
   vagabondSetUp: flowState.vagabondSetUp,
 })
@@ -59,6 +61,7 @@ const applySlice = (state: FlowState, slice: FlowSlice) => {
   state.landmarkPool = slice.landmarkPool
   state.lastFactionLocked = slice.lastFactionLocked
   state.currentPlayerIndex = slice.playerIndex
+  state.ruinItemsSetUp = slice.ruinItemsSetUp
   state.currentStep = slice.step
   state.vagabondSetUp = slice.vagabondSetUp
 }
@@ -73,6 +76,7 @@ export const flowSlice = createSlice({
     landmarkPool: [],
     lastFactionLocked: false,
     currentPlayerIndex: null,
+    ruinItemsSetUp: false,
     currentStep: SetupStep.chooseExpansions,
     vagabondSetUp: false,
     pastSteps: [],
@@ -156,15 +160,20 @@ export const flowSlice = createSlice({
     },
 
     addToHirelingPool: {
-      prepare: (...payload: [code: HirelingCode, demoted: boolean]) => ({ payload }),
-      reducer(state, { payload }: PayloadAction<[HirelingCode, boolean]>) {
-        const [code, demoted] = payload
+      prepare: (...payload: [code: HirelingCode, demoted: boolean, ruinItems: boolean]) => ({
+        payload,
+      }),
+      reducer(state, { payload }: PayloadAction<[HirelingCode, boolean, boolean]>) {
+        const [code, demoted, ruinItems] = payload
         state.hirelingPool.push({ code, demoted })
+        // Hirelings are set up before factions, so flag that factions don't need to set up ruin items
+        if (ruinItems) state.ruinItemsSetUp = true
       },
     },
 
     resetHirelingPool(state) {
       state.hirelingPool = []
+      state.ruinItemsSetUp = false
     },
 
     removeCurrentHirelingFromPool(state) {
@@ -190,6 +199,7 @@ export const flowSlice = createSlice({
         if (faction.dealVagabond) {
           factionEntry.vagabond = vagabondPool ? takeRandom(vagabondPool) : true
         }
+        if (faction.ruinItems) factionEntry.ruinItems = true
         if (faction.dealCaptains && captainPool) {
           factionEntry.captains = [
             takeRandom(captainPool),
@@ -219,6 +229,8 @@ export const flowSlice = createSlice({
         if (state.lastFactionLocked && removedFaction?.militant) state.lastFactionLocked = false
         // Flag if we set up a vagabond
         if (!state.vagabondSetUp && removedFaction?.vagabond) state.vagabondSetUp = true
+        // Flag if we set up the ruin items
+        if (!state.ruinItemsSetUp && removedFaction?.ruinItems) state.ruinItemsSetUp = true
       } else {
         console.warn(`Invalid removeCurrentFactionFromPool action: currentIndex must not be null`)
       }
@@ -261,6 +273,7 @@ export const flowSlice = createSlice({
         state.landmarkPool = []
         state.lastFactionLocked = false
         state.currentPlayerIndex = null
+        state.ruinItemsSetUp = false
         state.currentStep = SetupStep.chooseExpansions
         state.vagabondSetUp = false
         state.pastSteps = []
@@ -279,6 +292,7 @@ export const flowSlice = createSlice({
       landmarkPool: state => state.landmarkPool,
       lastFactionLocked: state => state.lastFactionLocked,
       playerIndex: state => state.currentPlayerIndex,
+      ruinItemsSetUp: state => state.ruinItemsSetUp,
       step: state => state.currentStep,
       vagabondSetUp: state => state.vagabondSetUp,
     }),

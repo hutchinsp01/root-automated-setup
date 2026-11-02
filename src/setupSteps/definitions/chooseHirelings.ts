@@ -106,7 +106,14 @@ export const chooseHirelings: SetupStepDefinition = {
         // 3 players - 1 demoted
         // 4 players - 2 demoted
         // 5+ players - 3 demoted
-        dispatch(addToHirelingPool(hireling.code, state.setup.playerCount + index > 4))
+        const demoted = state.setup.playerCount + index > 4
+        dispatch(
+          addToHirelingPool(
+            hireling.code,
+            demoted,
+            demoted && (hireling.demotedRuinItems ?? false),
+          ),
+        )
         if (hireling.excludeFactions.length > 0) {
           dispatch(pushExcludedFactions(hireling.excludeFactions))
         }

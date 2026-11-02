@@ -14,14 +14,18 @@ const SetUpFactionStep: SetupStepComponent = ({ flowSlice }) => {
   const factionPoolFull = useAppSelector(selectFactionPoolFull(flowSlice))
   const { t } = useTranslation()
 
-  const { index, vagabondSetUp } = flowSlice
+  const { index, ruinItemsSetUp, vagabondSetUp } = flowSlice
   if (index == null) return null
 
   const { key, vagabond, captains } = factionPoolFull[index]!
 
-  // Use array so text can fall back to "default" if there is no "vagabondSetUp" variation
+  // Use array so text can fall back to "default" if there is no "vagabondSetUp" or "ruinItemsSetUp"
+  // variation
   const baseTextKey = `faction.${key}.${useDraft ? 'advancedSetup' : 'setup'}`
   const textKey = [`${baseTextKey}.default`]
+  if (ruinItemsSetUp) {
+    textKey.unshift(`${baseTextKey}.ruinItemsSetUp`)
+  }
   if (vagabondSetUp) {
     textKey.unshift(`${baseTextKey}.vagabondSetUp`)
   }
