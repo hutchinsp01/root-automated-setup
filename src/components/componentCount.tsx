@@ -19,13 +19,24 @@ const ComponentCount: React.FC<ComponentCountProps> = ({ component }) => {
 
   const image =
     component === 'warriors' ? selectedFaction.image : selectedFaction.pieces[component]?.image
+  // Vagabonds can use either their character's pawn (from the Vagabond Pack) or the standard pawn
+  const characterImage = component === 'warriors' ? selectedFaction.vagabond?.image : undefined
   return (
     <div className="count">
-      <img
-        src={image}
-        alt="" // Image is just decoration, so hide from screen readers
-        aria-hidden="true"
-      />{' '}
+      <div className="images">
+        {characterImage ? (
+          <img
+            src={characterImage}
+            alt="" // Image is just decoration, so hide from screen readers
+            aria-hidden="true"
+          />
+        ) : null}
+        <img
+          src={image}
+          alt="" // Image is just decoration, so hide from screen readers
+          aria-hidden="true"
+        />
+      </div>{' '}
       &#215;
       <LocaleText
         i18nKey={`component.${component}`}
