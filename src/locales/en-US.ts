@@ -56,6 +56,7 @@ export default {
     priority: `Priority {{count}}`,
     rabbit: `Rabbit`,
     redo: `Redo`,
+    rerollFactions: `Re-roll Factions`,
     reset: `Reset`,
     restartSetup: `Restart Setup`,
     ruin: `Ruin`,
