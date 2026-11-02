@@ -24,6 +24,7 @@ export default {
     },
     closeMessage: `Close Message`,
     complexity: `Complexity`,
+    confirmRestart: `Are you sure you want to restart setup? You will lose all current setup progress. This action cannot be undone.`,
     crafting: `Crafting Ability`,
     disableAll: `Disable All`,
     enableAll: `Enable All`,
